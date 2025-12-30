@@ -3,10 +3,17 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  return new Response(
+    JSON.stringify({ error: 'Missing Supabase env variables' }),
+    { status: 500 }
+  );
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   const { data, error } = await supabase
@@ -14,11 +21,8 @@ export async function GET() {
     .select('*');
 
   if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 200 });
+  return Response.json(data);
 }
