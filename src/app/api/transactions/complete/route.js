@@ -3,17 +3,16 @@ const { createClient } = require('@supabase/supabase-js')
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
-
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function POST(req) {
   const { transaction_id } = await req.json()
   if (!transaction_id) return NextResponse.json({ error: 'Transaction ID required' }, { status: 400 })
 
-  // Update transaction status
+  // Mark transaction completed
   await supabase.from('transactions').update({ status: 'completed' }).eq('id', transaction_id)
 
-  // Update job status to 'completed'
+  // Update job status to completed
   const { data: transaction } = await supabase.from('transactions').select('job_id').eq('id', transaction_id).single()
   if (transaction) {
     await supabase.from('jobs').update({ status: 'completed' }).eq('id', transaction.job_id)
